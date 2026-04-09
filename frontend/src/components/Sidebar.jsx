@@ -78,47 +78,46 @@ const menuItems = [
   },
 ];
 
-export default function Sidebar() {
-  const [activeItem, setActiveItem] = useState("Dashboard");
+export default function Sidebar({ activeItem, setActiveItem }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
-      {/* Mobile hamburger button */}
+      {/* Mobile hamburger — shown only on small screens */}
       <button
-        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md border border-green-100 lg:hidden"
+        className="fixed top-3 left-4 z-50 p-1.5 rounded-lg bg-white shadow border border-green-100 lg:hidden"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle sidebar"
       >
-        <div className="w-5 h-0.5 bg-green-600 mb-1 transition-all duration-200" />
-        <div className="w-5 h-0.5 bg-green-600 mb-1 transition-all duration-200" />
-        <div className="w-5 h-0.5 bg-green-600 transition-all duration-200" />
+        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
 
-      {/* Overlay for mobile */}
+      {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-black/20 z-30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar panel */}
       <aside
         className={`
           fixed top-0 left-0 h-full z-40 w-64
-          bg-white border-r border-green-50
+          bg-white border-r border-gray-100
           flex flex-col justify-between
-          shadow-[4px_0_24px_rgba(0,0,0,0.06)]
+          shadow-sm
           transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static lg:shadow-none lg:z-auto
+          lg:translate-x-0 lg:static lg:h-full lg:z-auto lg:shadow-none
         `}
       >
         {/* Logo */}
-        <div>
-          <div className="flex items-center gap-2 px-6 py-6 border-b border-green-50">
-            <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center shadow-sm">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center gap-2.5 px-6 py-5">
+            <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
@@ -126,8 +125,8 @@ export default function Sidebar() {
             <span className="text-green-600 font-bold text-lg tracking-tight">Managency</span>
           </div>
 
-          {/* Navigation */}
-          <nav className="px-4 pt-5 space-y-6">
+          {/* Nav */}
+          <nav className="flex-1 px-4 pb-4 space-y-6 overflow-y-auto">
             {menuItems.map((group) => (
               <div key={group.section}>
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 px-2 mb-2">
@@ -140,7 +139,7 @@ export default function Sidebar() {
                       <li key={item.label}>
                         <button
                           onClick={() => {
-                            setActiveItem(item.label);
+                            setActiveItem?.(item.label);
                             setIsOpen(false);
                           }}
                           className={`
@@ -152,17 +151,13 @@ export default function Sidebar() {
                             }
                           `}
                         >
-                          {/* Active left bar */}
                           {isActive && (
                             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-green-500 rounded-r-full" />
                           )}
-
-                          <span className={`transition-colors duration-150 ${isActive ? "text-green-500" : "text-gray-400 group-hover:text-gray-500"}`}>
+                          <span className={`${isActive ? "text-green-500" : "text-gray-400 group-hover:text-gray-500"}`}>
                             {item.icon}
                           </span>
-
-                          <span className="flex-1 text-left leading-tight">{item.label}</span>
-
+                          <span className="flex-1 text-left">{item.label}</span>
                           {item.badge && (
                             <span className="text-[9px] font-bold uppercase tracking-wide bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full">
                               {item.badge}
@@ -176,13 +171,13 @@ export default function Sidebar() {
               </div>
             ))}
           </nav>
-        </div>
 
-        {/* Footer */}
-        <div className="px-4 py-5 border-t border-green-50">
-          <p className="text-[10px] text-center text-gray-300 tracking-wide">
-            © Managency.com 2024
-          </p>
+          {/* Footer */}
+          <div className="px-4 py-4 border-t border-gray-50">
+            <p className="text-[10px] text-center text-gray-300 tracking-wide">
+              © Managency.com 2024
+            </p>
+          </div>
         </div>
       </aside>
     </>
