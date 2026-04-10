@@ -1,47 +1,53 @@
-"use client";
+// components/Filters.jsx
+import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
 
-export default function Filters({ search, setSearch, filter, setFilter }) {
+export default function Filters({ filters, onFilterChange, workers, projects, priorities, statuses }) {
+  const handleSearch = (e) => {
+    onFilterChange({ ...filters, search: e.target.value });
+  };
+
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
-      {/* Search */}
-      <div className="relative flex-1">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
-          </svg>
-        </span>
-        <input
-          type="text"
-          placeholder="Search projects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent shadow-sm transition"
-        />
-      </div>
-
-      {/* Filter */}
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-            <path d="M4 6h16M7 12h10M10 18h4" strokeLinecap="round" />
-          </svg>
-        </span>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent shadow-sm appearance-none cursor-pointer transition"
-        >
-          <option value="All">All Status</option>
-          <option value="Ongoing">Ongoing</option>
-          <option value="Completed">Completed</option>
-          <option value="Delayed">Delayed</option>
-        </select>
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3">
-            <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+        <div className="relative flex-1 max-w-md">
+          <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={filters.search}
+            onChange={handleSearch}
+            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
+        </div>
+        
+        <div className="flex gap-2 flex-wrap">
+          <select
+            value={filters.status}
+            onChange={(e) => onFilterChange({ ...filters, status: e.target.value })}
+            className="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Status</option>
+            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          
+          <select
+            value={filters.priority}
+            onChange={(e) => onFilterChange({ ...filters, priority: e.target.value })}
+            className="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Priority</option>
+            {priorities.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          
+          <select
+            value={filters.project}
+            onChange={(e) => onFilterChange({ ...filters, project: e.target.value })}
+            className="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Projects</option>
+            {projects.slice(0, 6).map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+        </div>
       </div>
     </div>
   );
