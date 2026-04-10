@@ -1,13 +1,10 @@
-<<<<<<< HEAD
-import Dashboard from '@/components/Overview';
-import Sidebar from '@/components/Sidebar';
-import React from 'react';
-=======
 "use client";
 
 import { useState } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import Dashboard from "@/components/Overview";
+import Profile from "@/components/Profile";
 
 const pageMeta = {
   Dashboard: { title: "Dashboard", subtitle: "All details about your selling products are here..." },
@@ -18,35 +15,36 @@ const pageMeta = {
   "Payment & Expenses": { title: "Payment & Expenses", subtitle: "Track all payments and expense records..." },
   "Site Uploads": { title: "Site Uploads", subtitle: "Upload and manage images and videos for your sites..." },
 };
->>>>>>> 21d401e0807742e3ec1665c7e8b4905be03265e7
 
-const page = () => {
+const Page = () => {
   const [activeItem, setActiveItem] = useState("Dashboard");
   const meta = pageMeta[activeItem] || pageMeta["Dashboard"];
 
-  return (
-<<<<<<< HEAD
-    <div>
-    <Sidebar/>
-    <Dashboard/>
-=======
-    <div className="flex flex-col h-screen w-screen overflow-hidden">
+ return (
+  <div className="flex flex-col h-screen w-screen overflow-hidden">
+    <Header title={meta.title} subtitle={meta.subtitle} />
 
-      {/* Header — full width at top */}
-      <Header title={meta.title} subtitle={meta.subtitle} />
+    <div className="flex flex-1 overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar activeItem={activeItem} setActiveItem={setActiveItem} />
 
-      {/* Sidebar + Content — below header */}
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeItem={activeItem} setActiveItem={setActiveItem} />
+      {/* MAIN AREA */}
+      <div className="flex flex-1 items-start overflow-y-auto p-6 gap-6 bg-[#f7fdf9]">
 
-        <main className="flex-1 overflow-y-auto bg-white p-6 lg:p-8">
-          {/* Aapka page content yahan aayega */}
-        </main>
+        {/* Dashboard */}
+        <div className="flex-1">
+          <Dashboard />
+        </div>
+
+        {/* Profile */}
+        <div className="w-[300px] flex-shrink-0 self-start sticky top-6">
+  <Profile />
+</div>
+
       </div>
-
->>>>>>> 21d401e0807742e3ec1665c7e8b4905be03265e7
     </div>
+  </div>
   );
 };
 
-export default page;
+export default Page;

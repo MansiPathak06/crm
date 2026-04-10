@@ -110,7 +110,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("week");
 
   return (
-    <div className="min-h-screen bg-[#f7fdf9] p-4 sm:p-6 lg:p-8 font-sans">
+    <div className="w-full font-sans">
 
       {/* KPI Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
