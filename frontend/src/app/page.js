@@ -9,12 +9,6 @@ import Profile from "@/components/Profile";
 // ── Lead Management ──
 import LeadManagement from "@/components/LeadManagement";
 
-<<<<<<< HEAD
-=======
-// ── Vendor Management ──
-import VendorManagement from "@/components/VendorManagement";
-
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
 // ── Project Management components ──
 import OverviewCards from "@/components/OverviewCards";
 import ProjectTable from "@/components/ProjectTable";
@@ -23,11 +17,8 @@ import Filters from "@/components/Filters";
 ``;
 import RecentActivity from "@/components/RecentActivity";
 
-<<<<<<< HEAD
 // ── Task Management components ──
 import TaskManagementContent from "@/components/TaskManagementContent";
-=======
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
 // ─────────────────────────────────────────
 // Project Management Data
 // ─────────────────────────────────────────
@@ -187,17 +178,10 @@ const pageMeta = {
 // ─────────────────────────────────────────
 function ProjectManagementContent() {
   const [projects, setProjects] = useState(INITIAL_PROJECTS);
-<<<<<<< HEAD
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
-=======
-  const [search, setSearch]     = useState("");
-  const [filter, setFilter]     = useState("All");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [toast, setToast]       = useState(null);
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
 
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
@@ -212,14 +196,10 @@ function ProjectManagementContent() {
     setTimeout(() => setToast(null), 3000);
   };
 
-<<<<<<< HEAD
   const handleAdd = (newProject) => {
     setProjects((prev) => [newProject, ...prev]);
     showToast("Project created successfully!");
   };
-=======
-  const handleAdd  = (newProject) => { setProjects((prev) => [newProject, ...prev]); showToast("Project created successfully!"); };
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
   const handleView = (p) => showToast(`Viewing: ${p.name}`, "info");
   const handleEdit = (p) => showToast(`Edit opened for: ${p.name}`, "info");
 
@@ -227,13 +207,9 @@ function ProjectManagementContent() {
     <div className="w-full space-y-6">
       {/* Toast */}
       {toast && (
-<<<<<<< HEAD
         <div
           className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold text-white flex items-center gap-2 transition-all duration-300 ${toast.type === "success" ? "bg-emerald-500" : "bg-blue-500"}`}
         >
-=======
-        <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold text-white flex items-center gap-2 transition-all duration-300 ${toast.type === "success" ? "bg-emerald-500" : "bg-blue-500"}`}>
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
           {toast.msg}
         </div>
       )}
@@ -306,7 +282,6 @@ const Page = () => {
   const meta = pageMeta[activeItem] || pageMeta["Dashboard"];
 
   const isProjectManagement = activeItem === "Project Management";
-<<<<<<< HEAD
   const isLeadManagement = activeItem === "Lead Management";
 
   const isTaskManagement = activeItem === "Task Management";
@@ -314,13 +289,6 @@ const Page = () => {
   // Pages that use full-width layout (no Profile sidebar)
   const isFullWidth =
     isProjectManagement || isLeadManagement || isTaskManagement;
-=======
-  const isLeadManagement    = activeItem === "Lead Management";
-  const isVendorManagement  = activeItem === "Vendor Management";
-
-  // Pages that use full-width layout (no Profile sidebar)
-  const isFullWidth = isProjectManagement || isLeadManagement || isVendorManagement;
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
@@ -338,30 +306,14 @@ const Page = () => {
             <div className="flex-1 p-6">
               <ProjectManagementContent />
             </div>
-<<<<<<< HEAD
           ) : isTaskManagement ? (
             <div className="flex-1 p-6">
               <TaskManagementContent />
             </div>
-=======
-
-          /* ── Lead Management ── */
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
           ) : isLeadManagement ? (
             <div className="flex-1 p-6">
               <LeadManagement />
             </div>
-<<<<<<< HEAD
-=======
-
-          /* ── Vendor Management ── */
-          ) : isVendorManagement ? (
-            <div className="flex-1 p-6">
-              <VendorManagement />
-            </div>
-
-          /* ── Dashboard + Profile (default) ── */
->>>>>>> 804ecd741f7a554b3bba8272b351bdbf0d92fba7
           ) : (
             <div className="flex flex-1 items-start p-6 gap-6">
               <div className="flex-1">
