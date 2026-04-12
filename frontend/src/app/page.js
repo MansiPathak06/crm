@@ -21,6 +21,9 @@ import PaymentExpenses from "@/components/PaymentExpenses";
 // ── Site Uploads ──
 import SiteUploads from "@/components/SiteUploads";
 
+// ── Team Management ──
+import TeamManagement from "@/components/TeamManagement";
+
 // ── Project Management components ──
 import OverviewCards from "@/components/OverviewCards";
 import ProjectTable from "@/components/ProjectTable";
@@ -31,38 +34,27 @@ import RecentActivity from "@/components/RecentActivity";
 // ─────────────────────────────────────────
 // Project Management Data
 // ─────────────────────────────────────────
-const INITIAL_PROJECTS = [
-  { id: 1, name: "Skyline Tower Phase 2", location: "Mumbai, MH", status: "Ongoing", budget: "₹2,40,00,000", startDate: "Jan 10, 2024", endDate: "Dec 30, 2024", progress: 68 },
-  { id: 2, name: "Green Valley Residency", location: "Pune, MH", status: "Ongoing", budget: "₹72,00,000", startDate: "Mar 1, 2024", endDate: "Feb 28, 2025", progress: 41 },
-  { id: 3, name: "Riverside Bridge Project", location: "Nashik, MH", status: "Delayed", budget: "₹1,80,00,000", startDate: "Nov 5, 2023", endDate: "Aug 31, 2024", progress: 29 },
-  { id: 4, name: "Metro Rail Depot", location: "Nagpur, MH", status: "Ongoing", budget: "₹5,60,00,000", startDate: "Feb 15, 2024", endDate: "Jan 15, 2026", progress: 55 },
-  { id: 5, name: "Corporate Hub Annex", location: "Hyderabad, TS", status: "Completed", budget: "₹95,00,000", startDate: "Apr 1, 2023", endDate: "Mar 31, 2024", progress: 100 },
-  { id: 6, name: "Central Mall Expansion", location: "Bengaluru, KA", status: "Ongoing", budget: "₹3,20,00,000", startDate: "Jun 1, 2024", endDate: "May 31, 2025", progress: 78 },
-  { id: 7, name: "NH-48 Highway Widening", location: "Delhi–Gurugram", status: "Delayed", budget: "₹8,50,00,000", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", progress: 47 },
-  { id: 8, name: "Lakeview Villas", location: "Udaipur, RJ", status: "Completed", budget: "₹1,10,00,000", startDate: "Sep 1, 2022", endDate: "Aug 31, 2023", progress: 100 },
-  { id: 9, name: "Techpark Phase 3", location: "Chennai, TN", status: "Ongoing", budget: "₹4,15,00,000", startDate: "Jul 15, 2024", endDate: "Jun 30, 2026", progress: 22 },
-  { id: 10, name: "Old Town Heritage Restoration", location: "Jaipur, RJ", status: "Delayed", budget: "₹60,00,000", startDate: "Mar 1, 2023", endDate: "Feb 28, 2024", progress: 34 },
-  { id: 11, name: "Solar Farm Grid", location: "Rajkot, GJ", status: "Completed", budget: "₹2,00,00,000", startDate: "Jan 1, 2022", endDate: "Dec 31, 2022", progress: 100 },
-];
+
 
 // ─────────────────────────────────────────
 // Page Meta
 // ─────────────────────────────────────────
 const pageMeta = {
-  Dashboard:          { title: "Dashboard",          subtitle: "All details about your selling products are here..." },
-  "Lead Management":  { title: "Lead Management",    subtitle: "Track and manage all your leads in one place..." },
-  "Project Management": { title: "Project Management", subtitle: "Oversee all your ongoing and upcoming projects..." },
-  "Task Management":  { title: "Task Management",    subtitle: "Assign, track and complete tasks efficiently..." },
-  "Vendor Management": { title: "Vendor Management", subtitle: "Manage your vendors and supplier relationships..." },
-  "Payment & Expenses": { title: "Payment & Expenses", subtitle: "Track all payments and expense records..." },
-  "Site Uploads":     { title: "Site Uploads",       subtitle: "Upload and manage images and videos for your sites..." },
+  Dashboard:            { title: "Dashboard",            subtitle: "All details about your selling products are here..." },
+  "Lead Management":    { title: "Lead Management",      subtitle: "Track and manage all your leads in one place..." },
+  "Project Management": { title: "Project Management",   subtitle: "Oversee all your ongoing and upcoming projects..." },
+  "Task Management":    { title: "Task Management",      subtitle: "Assign, track and complete tasks efficiently..." },
+  "Vendor Management":  { title: "Vendor Management",    subtitle: "Manage your vendors and supplier relationships..." },
+  "Payment & Expenses": { title: "Payment & Expenses",   subtitle: "Track all payments and expense records..." },
+  "Site Uploads":       { title: "Site Uploads",         subtitle: "Upload and manage images and videos for your sites..." },
+  "Team Management":    { title: "Team Management",      subtitle: "Manage your team members and their roles..." },
 };
 
 // ─────────────────────────────────────────
 // Project Management Section
 // ─────────────────────────────────────────
 function ProjectManagementContent() {
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
+ const [projects, setProjects] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
@@ -125,7 +117,7 @@ function ProjectManagementContent() {
           <ProjectTable projects={filteredProjects} onView={handleView} onEdit={handleEdit} />
         </div>
         <div className="xl:col-span-1">
-          <RecentActivity />
+         <RecentActivity activities={[]} />
         </div>
       </div>
 
@@ -147,6 +139,7 @@ const Page = () => {
   const isTaskManagement    = activeItem === "Task Management";
   const isPaymentExpenses   = activeItem === "Payment & Expenses";
   const isSiteUploads       = activeItem === "Site Uploads";
+  const isTeamManagement    = activeItem === "Team Management";
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
@@ -185,6 +178,11 @@ const Page = () => {
           ) : isSiteUploads ? (
             <div className="flex-1 p-6">
               <SiteUploads />
+            </div>
+
+          ) : isTeamManagement ? (
+            <div className="flex-1 p-6">
+              <TeamManagement />
             </div>
 
           ) : (

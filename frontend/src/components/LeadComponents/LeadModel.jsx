@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { STATUSES, SOURCES, USERS } from "../LeadData";
+import { STATUSES, SOURCES } from "../LeadData";
+// remove USERS from import
 
 const empty = { name: "", email: "", phone: "", company: "", source: "Website", status: "New", assigned: "Aarav Shah", notes: "", value: "" };
 
-export default function LeadModal({ isOpen, onClose, onSave, initial }) {
+export default function LeadModal({ isOpen, onClose, onSave, initial, assignees }) {
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
 
@@ -105,7 +106,7 @@ export default function LeadModal({ isOpen, onClose, onSave, initial }) {
             <div>
               {label("Assign To", "assigned")}
               <select className={inputClass("assigned")} value={form.assigned} onChange={e => set("assigned", e.target.value)}>
-                {USERS.map(u => <option key={u}>{u}</option>)}
+               {assignees.map(u => <option key={u}>{u}</option>)}
               </select>
             </div>
             <div>

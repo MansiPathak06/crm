@@ -1,131 +1,44 @@
 "use client";
-import { useState, useMemo } from "react";
-// NEW (shared components folder)
-import OverviewCards from "../components/OverviewCards";
-import ProjectTable from "../components/ProjectTable";
-import AddProjectModal from "../components/AddProjectModal";
-import Filters from "../components/Filters";
-import RecentActivity from "../components/RecentActivity";
-const INITIAL_PROJECTS = [
-  {
-    id: 1,
-    name: "Skyline Tower Phase 2",
-    location: "Mumbai, MH",
-    status: "Ongoing",
-    budget: "₹2,40,00,000",
-    startDate: "Jan 10, 2024",
-    endDate: "Dec 30, 2024",
-    progress: 68,
-  },
-  {
-    id: 2,
-    name: "Green Valley Residency",
-    location: "Pune, MH",
-    status: "Ongoing",
-    budget: "₹72,00,000",
-    startDate: "Mar 1, 2024",
-    endDate: "Feb 28, 2025",
-    progress: 41,
-  },
-  {
-    id: 3,
-    name: "Riverside Bridge Project",
-    location: "Nashik, MH",
-    status: "Delayed",
-    budget: "₹1,80,00,000",
-    startDate: "Nov 5, 2023",
-    endDate: "Aug 31, 2024",
-    progress: 29,
-  },
-  {
-    id: 4,
-    name: "Metro Rail Depot",
-    location: "Nagpur, MH",
-    status: "Ongoing",
-    budget: "₹5,60,00,000",
-    startDate: "Feb 15, 2024",
-    endDate: "Jan 15, 2026",
-    progress: 55,
-  },
-  {
-    id: 5,
-    name: "Corporate Hub Annex",
-    location: "Hyderabad, TS",
-    status: "Completed",
-    budget: "₹95,00,000",
-    startDate: "Apr 1, 2023",
-    endDate: "Mar 31, 2024",
-    progress: 100,
-  },
-  {
-    id: 6,
-    name: "Central Mall Expansion",
-    location: "Bengaluru, KA",
-    status: "Ongoing",
-    budget: "₹3,20,00,000",
-    startDate: "Jun 1, 2024",
-    endDate: "May 31, 2025",
-    progress: 78,
-  },
-  {
-    id: 7,
-    name: "NH-48 Highway Widening",
-    location: "Delhi–Gurugram",
-    status: "Delayed",
-    budget: "₹8,50,00,000",
-    startDate: "Jan 1, 2023",
-    endDate: "Dec 31, 2023",
-    progress: 47,
-  },
-  {
-    id: 8,
-    name: "Lakeview Villas",
-    location: "Udaipur, RJ",
-    status: "Completed",
-    budget: "₹1,10,00,000",
-    startDate: "Sep 1, 2022",
-    endDate: "Aug 31, 2023",
-    progress: 100,
-  },
-  {
-    id: 9,
-    name: "Techpark Phase 3",
-    location: "Chennai, TN",
-    status: "Ongoing",
-    budget: "₹4,15,00,000",
-    startDate: "Jul 15, 2024",
-    endDate: "Jun 30, 2026",
-    progress: 22,
-  },
-  {
-    id: 10,
-    name: "Old Town Heritage Restoration",
-    location: "Jaipur, RJ",
-    status: "Delayed",
-    budget: "₹60,00,000",
-    startDate: "Mar 1, 2023",
-    endDate: "Feb 28, 2024",
-    progress: 34,
-  },
-  {
-    id: 11,
-    name: "Solar Farm Grid",
-    location: "Rajkot, GJ",
-    status: "Completed",
-    budget: "₹2,00,00,000",
-    startDate: "Jan 1, 2022",
-    endDate: "Dec 31, 2022",
-    progress: 100,
-  },
-];
+import { useState, useMemo, useEffect } from "react";
+import OverviewCards    from "../components/OverviewCards";
+import ProjectTable     from "../components/ProjectTable";
+import AddProjectModal  from "../components/AddProjectModal";
+import Filters          from "../components/Filters";
+import RecentActivity   from "../components/RecentActivity";
+
+const API_BASE = "http://localhost:5000/api/projects";
 
 export default function ProjectManagementPage() {
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [projects,   setProjects]   = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [search,     setSearch]     = useState("");
+  const [filter,     setFilter]     = useState("All");
+  const [modalOpen,  setModalOpen]  = useState(false);
+  const [editData,   setEditData]   = useState(null);
+  const [toast,      setToast]      = useState(null);
 
+  // ── Fetch all projects on mount ─────────
+  useEffect(() => { fetchProjects(); }, []);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const res  = await fetch(API_BASE);
+      const data = await res.json();
+      setProjects(Array.isArray(data) ? data : []);
+    } catch {
+      showToast("Failed to load projects. Is the server running?", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // ── Filter ──────────────────────────────
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -134,39 +47,65 @@ export default function ProjectManagementPage() {
     });
   }, [projects, search, filter]);
 
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
+  // ── Add or Edit ─────────────────────────
+  const handleAdd = async (formData) => {
+    try {
+      const isEdit = !!editData;
+      const url    = isEdit ? `${API_BASE}/${editData.id}` : API_BASE;
+      const method = isEdit ? "PUT" : "POST";
+       console.log("Sending to backend:", url, method, formData);
+
+      const res  = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+       console.log("Backend response:", res.status, data); 
+
+      if (!res.ok) { showToast(data.error || "Failed to save project", "error"); return; }
+
+     console.log("Response status:", res.status);
+console.log("Response data:", data);
+
+if (isEdit) {
+  setProjects((prev) => prev.map((p) => p.id === data.id ? data : p));
+  showToast("Project updated successfully!");
+} else {
+  setProjects((prev) => [data, ...prev]);
+  showToast("Project created successfully!");
+}
+
+      setEditData(null);
+      setModalOpen(false);
+    } catch {
+      showToast("Network error. Check your backend server.", "error");
+    }
   };
 
-  const handleAdd = (newProject) => {
-    setProjects((prev) => [newProject, ...prev]);
-    showToast("Project created successfully!");
+  // ── Delete ──────────────────────────────
+  const handleDelete = async (id) => {
+    if (!confirm("Delete this project?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      if (!res.ok) { showToast("Failed to delete project", "error"); return; }
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      showToast("Project deleted!", "info");
+    } catch {
+      showToast("Network error.", "error");
+    }
   };
 
+  const handleEdit = (p) => { setEditData(p); setModalOpen(true); };
   const handleView = (p) => showToast(`Viewing: ${p.name}`, "info");
-  const handleEdit = (p) => showToast(`Edit opened for: ${p.name}`, "info");
 
   return (
     <div className="min-h-screen bg-gray-50/70 font-sans">
       {/* Toast */}
       {toast && (
-        <div
-          className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold text-white flex items-center gap-2 transition-all duration-300 ${
-            toast.type === "success" ? "bg-emerald-500" : "bg-blue-500"
-          }`}
-        >
-          {toast.type === "success" ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
-              <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="12" cy="12" r="9" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          )}
+        <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold text-white flex items-center gap-2 transition-all duration-300 ${
+          toast.type === "success" ? "bg-emerald-500" : toast.type === "error" ? "bg-rose-500" : "bg-blue-500"
+        }`}>
           {toast.msg}
         </div>
       )}
@@ -188,9 +127,8 @@ export default function ProjectManagementPage() {
             </div>
             <p className="text-sm text-gray-500 ml-10">Oversee all your ongoing and upcoming construction projects</p>
           </div>
-
           <button
-            onClick={() => setModalOpen(true)}
+            onClick={() => { setEditData(null); setModalOpen(true); }}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200 self-start sm:self-auto"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
@@ -200,36 +138,38 @@ export default function ProjectManagementPage() {
           </button>
         </div>
 
-        {/* Overview Cards */}
-        <OverviewCards />
+        {/* Overview Cards — computed from live data */}
+        <OverviewCards projects={projects} />
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Projects Section — 3/4 width on xl */}
-          <div className="xl:col-span-3 space-y-4">
-            {/* Filters Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex-1 max-w-lg">
-                <Filters search={search} setSearch={setSearch} filter={filter} setFilter={setFilter} />
+        {/* Main Content */}
+        {loading ? (
+          <div className="text-center py-20 text-gray-400 animate-pulse text-sm">Loading projects...</div>
+        ) : (
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            <div className="xl:col-span-3 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex-1 max-w-lg">
+                  <Filters search={search} setSearch={setSearch} filter={filter} setFilter={setFilter} />
+                </div>
+                <div className="text-sm text-gray-400 font-medium shrink-0">
+                  {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""} found
+                </div>
               </div>
-              <div className="text-sm text-gray-400 font-medium shrink-0">
-                {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""} found
-              </div>
+              <ProjectTable projects={filteredProjects} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
             </div>
-
-            {/* Project Table / Cards */}
-            <ProjectTable projects={filteredProjects} onView={handleView} onEdit={handleEdit} />
+            <div className="xl:col-span-1">
+             <RecentActivity activities={yourActivitiesArray} />
+            </div>
           </div>
-
-          {/* Recent Activity — 1/4 width on xl */}
-          <div className="xl:col-span-1">
-            <RecentActivity />
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Modal */}
-      <AddProjectModal open={modalOpen} onClose={() => setModalOpen(false)} onAdd={handleAdd} />
+      <AddProjectModal
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setEditData(null); }}
+        onAdd={handleAdd}
+        editData={editData}
+      />
     </div>
   );
 }

@@ -1,26 +1,67 @@
 "use client";
-import { useState, useMemo } from "react";
-import { INITIAL_LEADS } from "./LeadData";
+import { useState, useMemo, useEffect } from "react";
 import SummaryCards from "./LeadComponents/SummaryCard";
 import FilterBar    from "./LeadComponents/FilterBar";
 import LeadsTable   from "./LeadComponents/LeadsTable";
 import KanbanBoard  from "./LeadComponents/KanbanBoard";
 import LeadModal    from "./LeadComponents/LeadModel";
 import LeadDrawer   from "./LeadComponents/LeadDrawer";
-import StatusBadge  from "./LeadComponents/StatusBadge";
+
+const API_BASE = "http://localhost:5000/api/leads";
 
 const defaultFilters = { search: "", status: "", source: "", assigned: "", dateFrom: "" };
-let nextId = INITIAL_LEADS.length + 1;
 
 export default function LeadManagement() {
-  const [leads,    setLeads]    = useState(INITIAL_LEADS);
+  const [leads,    setLeads]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
   const [filters,  setFilters]  = useState(defaultFilters);
-  const [view,     setView]     = useState("table");   // "table" | "kanban"
+  const [view,     setView]     = useState("table");
   const [modal,    setModal]    = useState(false);
-  const [editing,  setEditing]  = useState(null);      // lead being edited
-  const [selected, setSelected] = useState(null);      // lead in drawer
+  const [editing,  setEditing]  = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [toast,    setToast]    = useState(null);
+  const [users, setUsers] = useState([]);
 
-  // ── Filtering ──────────────────────────────────────────────────────────────
+  // ── Fetch all leads on mount ────────────
+  useEffect(() => { fetchLeads(); }, []);
+
+  useEffect(() => {
+  fetchLeads();
+  fetchUsers();
+}, []);
+const fetchUsers = async () => {
+  try {
+    const res  = await fetch("http://localhost:5000/api/employees");
+    const data = await res.json();
+    // Only active employees, extract names
+    const names = data
+      .filter(e => e.status === "Active")
+      .map(e => e.name);
+    setUsers(names);
+  } catch {
+    setUsers([]); // fallback to empty
+  }
+};
+
+  const fetchLeads = async () => {
+    setLoading(true);
+    try {
+      const res  = await fetch(API_BASE);
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch {
+      showToast("Failed to load leads. Is the server running?", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // ── Filtering ───────────────────────────
   const filtered = useMemo(() => {
     return leads.filter(l => {
       const q = filters.search.toLowerCase();
@@ -33,26 +74,83 @@ export default function LeadManagement() {
     });
   }, [leads, filters]);
 
-  // ── CRUD ───────────────────────────────────────────────────────────────────
-  const handleSave = (form) => {
-    if (editing) {
-      setLeads(ls => ls.map(l => l.id === editing.id ? { ...l, ...form } : l));
-      if (selected?.id === editing.id) setSelected(prev => ({ ...prev, ...form }));
-    } else {
-      const lead = { ...form, id: nextId++, date: new Date().toISOString().slice(0, 10) };
-      setLeads(ls => [lead, ...ls]);
+  // ── Save (create or update) ─────────────
+  const handleSave = async (form) => {
+    try {
+      const isEdit = !!editing;
+      const url    = isEdit ? `${API_BASE}/${editing.id}` : API_BASE;
+      const method = isEdit ? "PUT" : "POST";
+
+      const res  = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+
+      if (!res.ok) { showToast(data.error || "Failed to save lead", "error"); return; }
+
+      if (isEdit) {
+        setLeads(ls => ls.map(l => l.id === data.id ? data : l));
+        if (selected?.id === data.id) setSelected(data);
+        showToast("Lead updated successfully!");
+      } else {
+        setLeads(ls => [data, ...ls]);
+        showToast("Lead added successfully!");
+      }
+
+      setEditing(null);
+      setModal(false);
+    } catch {
+      showToast("Network error. Check your backend server.", "error");
     }
-    setEditing(null);
-    setModal(false);
   };
 
-  const handleEdit = (lead) => { setEditing(lead); setModal(true); if (selected) setSelected(null); };
-  const handleDelete = (id)  => { setLeads(ls => ls.filter(l => l.id !== id)); if (selected?.id === id) setSelected(null); };
-  const handleAdd = ()       => { setEditing(null); setModal(true); };
+  // ── Delete ──────────────────────────────
+  const handleDelete = async (id) => {
+    if (!confirm("Delete this lead?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      if (!res.ok) { showToast("Failed to delete lead", "error"); return; }
+      setLeads(ls => ls.filter(l => l.id !== id));
+      if (selected?.id === id) setSelected(null);
+      showToast("Lead removed!", "info");
+    } catch {
+      showToast("Network error.", "error");
+    }
+  };
+
+  // ── Kanban drag-drop status change ──────
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res  = await fetch(`${API_BASE}/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast("Failed to update status", "error"); return; }
+      setLeads(ls => ls.map(l => l.id === id ? data : l));
+    } catch {
+      showToast("Network error.", "error");
+    }
+  };
+
+  const handleEdit   = (lead) => { setEditing(lead); setModal(true); if (selected) setSelected(null); };
+  const handleAdd    = ()     => { setEditing(null); setModal(true); };
 
   return (
     <div className="w-full font-sans">
-      {/* ── Page title bar ── */}
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold text-white transition-all duration-300 ${
+          toast.type === "success" ? "bg-emerald-500" : toast.type === "error" ? "bg-rose-500" : "bg-blue-500"
+        }`}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Page title */}
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-lg font-bold text-gray-800 leading-tight">Lead Management</h1>
@@ -70,43 +168,47 @@ export default function LeadManagement() {
         </div>
       </div>
 
-      {/* ── Summary cards ── */}
-      <SummaryCards leads={leads} />
-
-      {/* ── Filters + view toggle + add button ── */}
-      <FilterBar
-        filters={filters}
-        setFilters={setFilters}
-        onAddLead={handleAdd}
-        view={view}
-        setView={setView}
-      />
-
-      {/* ── Main content ── */}
-      {view === "table" ? (
-        <LeadsTable
-          leads={filtered}
-          onSelect={setSelected}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+      {/* Loading state */}
+      {loading ? (
+        <div className="text-center py-20 text-gray-400 animate-pulse text-sm">Loading leads...</div>
       ) : (
-        <KanbanBoard
-          leads={filtered}
-          setLeads={setLeads}
-          onSelect={setSelected}
-        />
+        <>
+          <SummaryCards leads={leads} />
+
+          <FilterBar
+            filters={filters}
+            setFilters={setFilters}
+            onAddLead={handleAdd}
+            view={view}
+            setView={setView}
+            assignees={users}
+          />
+
+          {view === "table" ? (
+            <LeadsTable
+              leads={filtered}
+              onSelect={setSelected}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ) : (
+            <KanbanBoard
+              leads={filtered}
+              onStatusChange={handleStatusChange}
+              onSelect={setSelected}
+            />
+          )}
+        </>
       )}
 
-      {/* ── Add/Edit Modal ── */}
       <LeadModal
         isOpen={modal}
         onClose={() => { setModal(false); setEditing(null); }}
         onSave={handleSave}
         initial={editing}
+        assignees={users}
       />
 
-      {/* ── Details Drawer ── */}
       <LeadDrawer
         lead={selected}
         onClose={() => setSelected(null)}

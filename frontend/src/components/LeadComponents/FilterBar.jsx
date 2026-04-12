@@ -1,7 +1,8 @@
 "use client";
-import { STATUSES, SOURCES, USERS } from "../LeadData";
+import { STATUSES, SOURCES } from "../LeadData";
 
-export default function FilterBar({ filters, setFilters, onAddLead, view, setView }) {
+
+export default function FilterBar({ filters, setFilters, onAddLead, view, setView, assignees }) {
   const set = (key, val) => setFilters(f => ({ ...f, [key]: val }));
 
   const selectClass = "h-9 rounded-xl border border-gray-200 bg-white px-3 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-400 hover:border-gray-300 transition-colors cursor-pointer shadow-sm";
@@ -37,7 +38,7 @@ export default function FilterBar({ filters, setFilters, onAddLead, view, setVie
       {/* Assigned */}
       <select className={selectClass} value={filters.assigned} onChange={e => set("assigned", e.target.value)}>
         <option value="">All Agents</option>
-        {USERS.map(u => <option key={u}>{u}</option>)}
+       {assignees.map(u => <option key={u}>{u}</option>)}
       </select>
 
       {/* Date from */}
