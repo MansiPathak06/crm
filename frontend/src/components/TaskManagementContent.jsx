@@ -1,202 +1,125 @@
-// components/TaskManagementContent.jsx
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import OverviewCards from './OverviewCards';
-import TaskTable from './TaskTable';
-import TaskKanban from './TaskKanban';
-import AddTaskModal from './AddTaskModal';
-import Filters from './Filters';
-import TodayTasks from './TodayTasks';
+import { useState, useMemo } from "react";
+import TaskTable from "@/components/TaskTable";
+import TodayTasks from "@/components/TodayTasks";
 
-const TASKS_DATA = [
-  {
-    id: 1,
-    name: 'Foundation Pouring - Site A',
-    assignedTo: 'John Doe (Foreman)',
-    project: 'Skyline Tower Phase 2',
-    priority: 'High',
-    status: 'In Progress',
-    deadline: '2026-04-15',
-    progress: 75,
-    overdue: false,
-  },
-  {
-    id: 2,
-    name: 'Steel Framework Delivery',
-    assignedTo: 'Jane Smith (Supervisor)',
-    project: 'Green Valley Residency',
-    priority: 'Medium',
-    status: 'Pending',
-    deadline: '2026-04-12',
-    progress: 0,
-    overdue: true,
-  },
-  {
-    id: 3,
-    name: 'Electrical Rough-In Complete',
-    assignedTo: 'Mike Johnson (Electrician)',
-    project: 'Corporate Hub Annex',
-    priority: 'Low',
-    status: 'Completed',
-    deadline: '2026-04-08',
-    progress: 100,
-    overdue: false,
-  },
-  {
-    id: 4,
-    name: 'Plumbing First Floor',
-    assignedTo: 'Sarah Wilson (Plumber)',
-    project: 'NH-48 Highway Widening',
-    priority: 'High',
-    status: 'In Progress',
-    deadline: '2026-04-20',
-    progress: 40,
-    overdue: false,
-  },
-  {
-    id: 5,
-    name: 'Roof Truss Installation',
-    assignedTo: 'Tom Brown (Carpenter)',
-    project: 'Lakeview Villas',
-    priority: 'Medium',
-    status: 'Pending',
-    deadline: '2026-04-18',
-    progress: 10,
-    overdue: false,
-  },
-  {
-    id: 6,
-    name: 'Exterior Painting Complete',
-    assignedTo: 'Lisa Davis (Painter)',
-    project: 'Old Town Heritage Restoration',
-    priority: 'High',
-    status: 'Completed',
-    deadline: '2026-04-10',
-    progress: 100,
-    overdue: false,
-  },
+const INITIAL_TASKS = [
+  { id: 1, name: "Foundation Inspection", assignedTo: "Ravi Kumar", project: "Skyline Tower Phase 2", priority: "High", status: "In Progress", deadline: "Apr 15, 2024", progress: 60, overdue: false },
+  { id: 2, name: "Electrical Wiring - Floor 3", assignedTo: "Anita Shah", project: "Green Valley Residency", priority: "Medium", status: "Pending", deadline: "Apr 10, 2024", progress: 20, overdue: true },
+  { id: 3, name: "Concrete Pouring", assignedTo: "Suresh Patil", project: "Riverside Bridge Project", priority: "High", status: "In Progress", deadline: "Apr 20, 2024", progress: 45, overdue: false },
+  { id: 4, name: "Site Safety Audit", assignedTo: "Meena Joshi", project: "Metro Rail Depot", priority: "High", status: "Completed", deadline: "Mar 30, 2024", progress: 100, overdue: false },
+  { id: 5, name: "Material Procurement", assignedTo: "Deepak Rao", project: "Central Mall Expansion", priority: "Medium", status: "In Progress", deadline: "Apr 25, 2024", progress: 70, overdue: false },
+  { id: 6, name: "Plumbing Installation", assignedTo: "Priya Nair", project: "Lakeview Villas", priority: "Low", status: "Completed", deadline: "Mar 15, 2024", progress: 100, overdue: false },
+  { id: 7, name: "Roof Sealing", assignedTo: "Amit Verma", project: "Techpark Phase 3", priority: "Medium", status: "Pending", deadline: "Apr 8, 2024", progress: 10, overdue: true },
+  { id: 8, name: "Interior Painting", assignedTo: "Kavita Singh", project: "Corporate Hub Annex", priority: "Low", status: "In Progress", deadline: "Apr 30, 2024", progress: 35, overdue: false },
 ];
 
-const WORKERS = [
-  'John Doe (Foreman)', 'Jane Smith (Supervisor)', 'Mike Johnson (Electrician)', 
-  'Sarah Wilson (Plumber)', 'Tom Brown (Carpenter)', 'Lisa Davis (Painter)',
-  'Robert Clark (Mason)', 'Emily White (Engineer)'
+const SUMMARY_CARDS = [
+  { label: "Total Tasks", key: "total", color: "blue" },
+  { label: "In Progress", key: "inProgress", color: "emerald" },
+  { label: "Completed", key: "completed", color: "violet" },
+  { label: "Overdue", key: "overdue", color: "rose" },
 ];
-
-const PROJECTS = [
-  'Skyline Tower Phase 2', 'Green Valley Residency', 'Corporate Hub Annex', 
-  'NH-48 Highway Widening', 'Lakeview Villas', 'Old Town Heritage Restoration'
-];
-
-const PRIORITIES = ['Low', 'Medium', 'High'];
-const STATUSES = ['Pending', 'In Progress', 'Completed'];
 
 export default function TaskManagementContent() {
-  const [tasks, setTasks] = useState(TASKS_DATA);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filters, setFilters] = useState({ search: '', status: '', priority: '', project: '' });
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
 
   const filteredTasks = useMemo(() => {
-    let result = tasks;
-    if (filters.search) {
-      result = result.filter(task => 
-        task.name.toLowerCase().includes(filters.search.toLowerCase())
-      );
-    }
-    if (filters.status) result = result.filter(task => task.status === filters.status);
-    if (filters.priority) result = result.filter(task => task.priority === filters.priority);
-    if (filters.project) result = result.filter(task => task.project === filters.project);
-    return result;
-  }, [tasks, filters]);
+    return tasks.filter((t) => {
+      const matchSearch =
+        t.name.toLowerCase().includes(search.toLowerCase()) ||
+        t.assignedTo.toLowerCase().includes(search.toLowerCase()) ||
+        t.project.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = statusFilter === "All" || t.status === statusFilter;
+      const matchPriority = priorityFilter === "All" || t.priority === priorityFilter;
+      return matchSearch && matchStatus && matchPriority;
+    });
+  }, [tasks, search, statusFilter, priorityFilter]);
 
-  const totalTasks = tasks.length;
-  const pendingTasks = tasks.filter(t => t.status === 'Pending').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'In Progress').length;
-  const completedTasks = tasks.filter(t => t.status === 'Completed').length;
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
+  const stats = {
+    total: tasks.length,
+    inProgress: tasks.filter((t) => t.status === "In Progress").length,
+    completed: tasks.filter((t) => t.status === "Completed").length,
+    overdue: tasks.filter((t) => t.overdue).length,
   };
 
-  const handleAddTask = (newTask) => {
-    setTasks([newTask, ...tasks]);
-    setIsModalOpen(false);
-  };
-
-  const today = '2026-04-10';
-  const todayTasks = tasks.filter(task => task.deadline === today);
-  const overdueTasks = tasks.filter(task => task.overdue);
+  const todayTasks = tasks.filter((t) => t.status !== "Completed");
+  const overdueTasks = tasks.filter((t) => t.overdue);
 
   return (
     <div className="w-full space-y-6">
-      {/* Header + Add Button */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Task Management</h1>
-          <p className="text-gray-600">Assign, track and complete construction tasks efficiently</p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 ml-auto"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Task
-        </button>
-      </div>
 
-      {/* Overview Cards */}
-      <OverviewCards
-        total={totalTasks}
-        pending={pendingTasks}
-        inProgress={inProgressTasks}
-        completed={completedTasks}
-      />
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {SUMMARY_CARDS.map((card) => (
+          <div key={card.key} className={`bg-${card.color}-50 rounded-2xl p-5 border border-white/60 shadow-sm`}>
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">{card.label}</p>
+            <p className={`text-4xl font-black text-${card.color}-700 mt-2`}>{stats[card.key]}</p>
+          </div>
+        ))}
+      </div>
 
       {/* Filters */}
-      <Filters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        workers={WORKERS}
-        projects={PROJECTS}
-        priorities={PRIORITIES}
-        statuses={STATUSES}
-      />
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search */}
+          <div className="relative flex-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search tasks, assignee, project..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
+            />
+          </div>
 
-      {/* Today Tasks & Overdue */}
-      <div className="grid md:grid-cols-2 gap-6">
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          >
+            {["All", "In Progress", "Pending", "Completed"].map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
+          {/* Priority Filter */}
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          >
+            {["All", "High", "Medium", "Low"].map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+
+          <div className="text-sm text-gray-400 font-medium self-center shrink-0">
+            {filteredTasks.length} task{filteredTasks.length !== 1 ? "s" : ""} found
+          </div>
+        </div>
+      </div>
+
+      {/* Task Table */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <TaskTable tasks={filteredTasks} />
+      </div>
+
+      {/* Today's Tasks + Overdue */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TodayTasks title="Today's Tasks" tasks={todayTasks} />
-        <TodayTasks title="Overdue Tasks" tasks={overdueTasks} highlightRed />
+        <TodayTasks title="Overdue Tasks" tasks={overdueTasks} highlightRed={true} />
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Task List</h2>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <TaskTable tasks={filteredTasks} />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Kanban Board</h2>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-4 h-[600px]">
-            <TaskKanban tasks={filteredTasks} />
-          </div>
-        </div>
-      </div>
-
-      <AddTaskModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddTask}
-        workers={WORKERS}
-        projects={PROJECTS}
-        priorities={PRIORITIES}
-        statuses={STATUSES}
-      />
     </div>
   );
 }
