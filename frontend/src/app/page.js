@@ -21,6 +21,9 @@ import PaymentExpenses from "@/components/PaymentExpenses";
 // ── Site Uploads ──
 import SiteUploads from "@/components/SiteUploads";
 
+// ── Team Management ──
+import TeamManagement from "@/components/TeamManagement";
+
 // ── Project Management components ──
 import OverviewCards from "@/components/OverviewCards";
 import ProjectTable from "@/components/ProjectTable";
@@ -49,13 +52,14 @@ const INITIAL_PROJECTS = [
 // Page Meta
 // ─────────────────────────────────────────
 const pageMeta = {
-  Dashboard:          { title: "Dashboard",          subtitle: "All details about your selling products are here..." },
-  "Lead Management":  { title: "Lead Management",    subtitle: "Track and manage all your leads in one place..." },
-  "Project Management": { title: "Project Management", subtitle: "Oversee all your ongoing and upcoming projects..." },
-  "Task Management":  { title: "Task Management",    subtitle: "Assign, track and complete tasks efficiently..." },
-  "Vendor Management": { title: "Vendor Management", subtitle: "Manage your vendors and supplier relationships..." },
-  "Payment & Expenses": { title: "Payment & Expenses", subtitle: "Track all payments and expense records..." },
-  "Site Uploads":     { title: "Site Uploads",       subtitle: "Upload and manage images and videos for your sites..." },
+  Dashboard:            { title: "Dashboard",            subtitle: "All details about your selling products are here..." },
+  "Lead Management":    { title: "Lead Management",      subtitle: "Track and manage all your leads in one place..." },
+  "Project Management": { title: "Project Management",   subtitle: "Oversee all your ongoing and upcoming projects..." },
+  "Task Management":    { title: "Task Management",      subtitle: "Assign, track and complete tasks efficiently..." },
+  "Vendor Management":  { title: "Vendor Management",    subtitle: "Manage your vendors and supplier relationships..." },
+  "Payment & Expenses": { title: "Payment & Expenses",   subtitle: "Track all payments and expense records..." },
+  "Site Uploads":       { title: "Site Uploads",         subtitle: "Upload and manage images and videos for your sites..." },
+  "Team Management":    { title: "Team Management",      subtitle: "Manage your team members and their roles..." },
 };
 
 // ─────────────────────────────────────────
@@ -147,6 +151,7 @@ const Page = () => {
   const isTaskManagement    = activeItem === "Task Management";
   const isPaymentExpenses   = activeItem === "Payment & Expenses";
   const isSiteUploads       = activeItem === "Site Uploads";
+  const isTeamManagement    = activeItem === "Team Management";
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
@@ -185,6 +190,11 @@ const Page = () => {
           ) : isSiteUploads ? (
             <div className="flex-1 p-6">
               <SiteUploads />
+            </div>
+
+          ) : isTeamManagement ? (
+            <div className="flex-1 p-6">
+              <TeamManagement />
             </div>
 
           ) : (
